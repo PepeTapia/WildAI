@@ -30,10 +30,18 @@ time_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=":0123456789/"'
     # 1. Scanning the image as an array
     # 2. Manipulating the array into specific ROI
         # Current ROI includes:
-        # Time - developed and confirmed
-        # Blue scoreboard - developed and confirmed
-        # Red scoreboard - developed and confirmed
-        # 
+            # Time - developed and confirmed
+            # Blue scoreboard - developed and confirmed
+            # Red scoreboard - developed and confirmed
+            # Blue Towers taken - not developed
+            # Red Towers taken - not developed
+
+        #Possible ROI includes:
+            # Wards - does each category return a specific and consistent output?
+                # Yellow Ward
+                # Red sweeper Ward
+                # Pink Ward
+
     # 3. Running pytesseract on it to grab the text on the ROI
     # 4. Turning ROI_text into integers for the use of data analysis
     # 5. Saving the integers in a formatted data structure of choice:
