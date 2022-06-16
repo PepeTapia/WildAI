@@ -46,10 +46,11 @@ time_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=":0123456789/"'
     # 4. Turning ROI_text into integers for the use of data analysis
     # 5. Saving the integers in a formatted data structure of choice:
         #Currently testing Pandas to determine most appropriate data structure
-    
+
+#Begin changing pyautogui
 
     
-oldTime = 0
+oldTime = 0 
 while True: 
     
     #timer start
