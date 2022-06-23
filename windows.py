@@ -14,6 +14,7 @@ import bluetessverify
 import redtessverify
 import pyautogui
 import processimg as pi
+import tess_verifiers as tessvf
 #No availability on macbook m1
 #import pyautogui
 #This is the editable configuration used
@@ -87,15 +88,20 @@ while True:
 
     #Time
     time_img = pi.pre_img(time_region,600, (150,255))
-    #Returns a string to be verified later
+
+    #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #
     #cv2.imshow('time_img',time_img)
     if cv2.waitKey(1) & 0xFF==ord('0'):
         break   
+    #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #
+
+
+    #Returns a string to be verified later
     timetest = pytesseract.image_to_string(time_img,config=time_config)
     #print(f"In game time:\n{timetest}")
     
     #Verify that a time exists by turning it from a string into an integer, ensuring that there exist [minutes, seconds] and no fuzzy figures within it.
-    if timetextverify.timetextverify(timetest) == False:
+    if tessvf.timetext(timetest) == False:
         #print("not a real time")
         continue
     else:
@@ -123,7 +129,7 @@ while True:
 
 
         #Verify Blue scoreboard
-        verified_bluesb = bluetessverify.bluetessverify(bluepytest)
+        verified_bluesb = tessvf.bluesb(bluepytest)
 
         if verified_bluesb == False:
             print("NOT A VALID SCOREBOARD BUT KEEP GOING!")
@@ -139,7 +145,7 @@ while True:
         #print(f"Red side:\n{redpytest}")
 
         #Verify red scoreboard
-        verified_redsb = redtessverify.redtessverify(redpytest)    
+        verified_redsb = tessvf.redsb(redpytest)    
 
         if verified_redsb == False:
             print("NOT A VALID SCOREBOARD BUT KEEP GOING!")

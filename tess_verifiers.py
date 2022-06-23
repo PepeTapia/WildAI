@@ -92,8 +92,11 @@ def timetext(timetext):
     else:
 
         #print(timetemp)
-        #Each minute passed will value at 60 seconds
+        
+        #String of "MM:SS" turned into integer of seconds
+        #timetemp[0] is minutes, turn into seconds
         tempMinutes = int(timetemp[0]) * 60
+        #timetemp[1] is seconds, add tempMinutes for total seconds
         seconds = int(timetemp[1]) + tempMinutes
         #print(seconds)
         return seconds
@@ -107,15 +110,22 @@ def sbverify(sbtext):
         for player in sbtext:
             if len(player) == 4:
                 for stat in player:
-                    verify = True
+                    if stat != '':
+                        #print("there is a player stat that is not complete")
+                        verify = True
+                    else:    
+                        verify = False
+                        return verify     
             else:
-                #print("there is a player stat list that is not complete")
                 verify = False
-                break
+                return verify
     else:
         #print("the scoreboard is incomplete")
-        verify = False
+        return verify
     return verify
+
+
+
 
 #def text_to_data(scoreboardtext):
 #    pass
