@@ -28,7 +28,7 @@ def redtessverify(redpytext):
         redstats.append(redtemp)
 
 
-    if sbverify(redstats) is False:
+    if sbverify.sbverify(redstats) is False:
         print("ya did it, ya caught a bad scoreboard!")
         notValid = False
         return notValid

@@ -29,7 +29,7 @@ def bluetessverify(bluepytext):
         bluestats.append(bluetemp)
 
 
-    if sbverify(bluestats) is False:
+    if sbverify.sbverify(bluestats) is False:
         print("ya did it, ya caught a bad scoreboard!")
         notValid = False
         return notValid
