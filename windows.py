@@ -7,11 +7,6 @@ import os
 import time
 import pytesseract
 from PIL import Image
-import glob
-import timetextverify
-import sbverify
-import bluetessverify
-import redtessverify
 import pyautogui
 import processimg as pi
 import tess_verifiers as tessvf
@@ -55,6 +50,20 @@ time_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=":0123456789"'
 
 #Begin changing pyautogui
 
+# Scoreboard, Blue scoreboard, and Red scoreboard regions   
+# scoreboard_region = screen_array[840:1200, 720:1200]
+# bluesb_region = gray_array[850:1070,720:915]
+# redsb_region = gray_array[850:1070, 1005:1195]
+# time_region = gray_array[75:105, 930:990]
+# Show the image of the scoreboard you would like to print out
+# Great for debugging purposes!
+
+# cv2.imshow('fullscreen', corrected_fullscreen)
+# cv2.imshow('scoreboard', corrected_sb)
+# cv2.imshow('bluesb',corrected_bluesb)
+# cv2.imshow('redsb',corrected_redsb)
+# cv2.imshow('time',corrected_time)
+
     
 oldTime = 0 
 while True: 
@@ -69,45 +78,26 @@ while True:
     scoreboard = pyautogui.screenshot()
     screen_array = np.array(scoreboard)
     gray_array = cv2.cvtColor(screen_array, cv2.COLOR_RGB2GRAY)
-    #Scoreboard, Blue scoreboard, and Red scoreboard regions   
-    #scoreboard_region = screen_array[840:1200, 720:1200]
-    bluesb_region = gray_array[850:1070,720:915]
-    redsb_region = gray_array[850:1070, 1005:1195]
+
+
+    # ------------------ Time to Text ----------------- #
     time_region = gray_array[75:105, 930:990]
-
-
-    #Show the image of the scoreboard you would like to print out
-    #Great for debugging purposes!
-
-    #cv2.imshow('fullscreen', corrected_fullscreen)
-    #cv2.imshow('scoreboard', corrected_sb)
-    #cv2.imshow('bluesb',corrected_bluesb)
-    #cv2.imshow('redsb',corrected_redsb)
-    #cv2.imshow('time',corrected_time)
-
-
-    #Time
+    #Preprocess img for pytesseract
     time_img = pi.pre_img(time_region,600, (150,255))
-
-    #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #
-    #cv2.imshow('time_img',time_img)
-    if cv2.waitKey(1) & 0xFF==ord('0'):
-        break   
-    #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #
-
-
     #Returns a string to be verified later
     timetest = pytesseract.image_to_string(time_img,config=time_config)
     #print(f"In game time:\n{timetest}")
-    
+
+
+    #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #    
     #Verify that a time exists by turning it from a string into an integer, ensuring that there exist [minutes, seconds] and no fuzzy figures within it.
-    if tessvf.timetext(timetest) == False:
+    if tessvf.time(timetest) == False:
         #print("not a real time")
         continue
     else:
         #Timer is an INTEGER variable that can be used later for the dataset - more valuable than a string. 
         #The string, timetest, can be used for file names though!
-        newTime = timetextverify.timetextverify(timetest)
+        newTime = tessvf.time(timetest)
         #print(timer)
     
     #Optimize so the function only grabs a unique instance per second
@@ -116,13 +106,20 @@ while True:
         continue
     
     else:
+        bluesb_region = gray_array[850:1070,720:915]
+            
+        #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #
+
         #print(f"In game time after verifying it only occurs once per second:\n{newTime}")
         oldTime = newTime
-        print(f"time: {oldTime}")
+        time_text = tessvf.int_time_to_text(oldTime)
+        print(f"time: {time_text}")
         #continue
         #Blue SB
-        bluesb_img = pi.pre_img(bluesb_region,250, (120,255))
-
+        bluesb_img = pi.pre_img(bluesb_region,300, threshold=(120,255),blur=(3,3))
+        cv2.imshow('bluesb_region', bluesb_img)
+        if cv2.waitKey(1) & 0xFF==ord('0'):
+            break   
 
         bluepytest = pytesseract.image_to_string(bluesb_img,config=bluesb_config)
         #print(f"Blue side:\n{bluepytest}")
@@ -138,8 +135,10 @@ while True:
             #print("success, continuing")
             print(verified_bluesb)
 
+
         #Red SB
-        redsb_img = pi.pre_img(redsb_region, 250, (90,255),(1,1))
+        redsb_region = gray_array[850:1070, 1005:1195]
+        redsb_img = pi.pre_img(redsb_region, 250, threshold=(90,255),blur=(1,1))
 
         redpytest = pytesseract.image_to_string(redsb_img,config=redsb_config)
         #print(f"Red side:\n{redpytest}")

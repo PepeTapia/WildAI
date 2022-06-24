@@ -27,7 +27,7 @@ def bluesb(bluepytext):
         bluestats.append(bluetemp)
 
 
-    if sbverify(bluestats) is False:
+    if verify_sb(bluestats) is False:
         print("Bad scoreboard!")
         notValid = False
         return notValid
@@ -63,14 +63,38 @@ def redsb(redpytext):
         redstats.append(redtemp)
 
 
-    if sbverify(redstats) is False:
+    if verify_sb(redstats) is False:
         print("Bad scoreboard!")
         notValid = False
         return notValid
     else:
         return redstats
 
-def timetext(timetext):
+
+
+def verify_sb(sbtext):
+    verify = False
+    if len(sbtext) == 5:
+    #print("it's the right size!")
+        for player in sbtext:
+            if len(player) == 4:
+                for stat in player:
+                    if stat == '':
+                        #print("there is a player stat that is not complete")
+                        verify = False
+                        return verify
+                    else:    
+                        verify = True
+            else:
+                verify = False
+                return verify
+    else:
+        #print("the scoreboard is incomplete")
+        return verify
+    return verify
+
+# This script takes int and turns it into a 00:00 min:sec time 
+def time(timetext):
     #The base case will be used as a comparison to keep track of the time. 
     #If the incoming time is less than or the same as the cached time - False and you can continue in the main function
     #If the incoming time is greater than the cached time - True and you can finish the main function
@@ -103,28 +127,14 @@ def timetext(timetext):
 
 
 
-def sbverify(sbtext):
-    verify = False
-    if len(sbtext) == 5:
-    #print("it's the right size!")
-        for player in sbtext:
-            if len(player) == 4:
-                for stat in player:
-                    if stat != '':
-                        #print("there is a player stat that is not complete")
-                        verify = True
-                    else:    
-                        verify = False
-                        return verify     
-            else:
-                verify = False
-                return verify
-    else:
-        #print("the scoreboard is incomplete")
-        return verify
-    return verify
 
-
+def int_time_to_text(time_int):
+    minutes = time_int // 60 # // is to ensure it is always an int
+    seconds = time_int % 60
+    time_string = str("%02d:%02d" %(minutes,seconds))
+    #print(minutes)
+    #print(seconds)
+    return time_string
 
 
 #def text_to_data(scoreboardtext):
