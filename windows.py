@@ -16,7 +16,7 @@ import tess_verifiers as tessvf
 bluesb_config = r'--oem 1 --psm 6 -c tessedit_char_whitelist="0123456789/"'
 redsb_config = r'--oem 1 --psm 6 -c tessedit_char_whitelist="0123456789/"'
 time_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=":0123456789"'
-
+header_config = r'--oem 3 --psm 10 -c tessedit_char_whitelist=".0123456789/"'
 
 
 # There exists a function variation that can be used to create and save images into a dataset
@@ -89,86 +89,100 @@ while True:
     #print(f"In game time:\n{timetest}")
 
 
-    #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #    
     #Verify that a time exists by turning it from a string into an integer, ensuring that there exist [minutes, seconds] and no fuzzy figures within it.
     if tessvf.time(timetest) == False:
         #print("not a real time")
         continue
-    else:
-        #Timer is an INTEGER variable that can be used later for the dataset - more valuable than a string. 
-        #The string, timetest, can be used for file names though!
-        newTime = tessvf.time(timetest)
-        #print(timer)
+    #else:
+    #Timer is an INTEGER variable that can be used later for the dataset - more valuable than a string. 
+    #The string, timetest, can be used for file names though!
+    newTime = tessvf.time(timetest)
+    #print(timer)
     
-    #Optimize so the function only grabs a unique instance per second
-    if  newTime <= oldTime:
-        #print(f"outta there{newTime} is less than {oldTime}")
+    # #Optimize so the function only grabs a unique instance per second
+    # if  newTime <= oldTime:
+    #     #print(f"outta there{newTime} is less than {oldTime}")
+    #     continue
+    
+    #else:
+    #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #
+    #print(f"In game time after verifying it only occurs once per second:\n{newTime}")
+    #oldTime = newTime
+    time_text = tessvf.int_time_to_text(newTime)
+    print(f"time: {time_text}")
+
+
+    #---------------Blue scoreboard begins --------------------#
+    bluesb_region = gray_array[850:1070,720:915]
+    bluesb_img = pi.pre_img(bluesb_region,250, threshold=(120,255),blur=(1,1))
+    bluepytest = pytesseract.image_to_string(bluesb_img,config=bluesb_config)
+
+    #Verify Blue scoreboard
+    verified_bluesb = tessvf.bluesb(bluepytest)
+
+    if verified_bluesb == False:
+        print("Blue scoreboard not valid")
         continue
-    
-    else:
-        bluesb_region = gray_array[850:1070,720:915]
-            
-        #---- ALWAYS COPY AND PASTE THESE TO MOVE AND DELETE WHEN DEBUGGING PICTURES ---- #
+    #else:
+    #print("success, continuing")
+    print(f"Blue scoreboard: {verified_bluesb}")
 
-        #print(f"In game time after verifying it only occurs once per second:\n{newTime}")
-        oldTime = newTime
-        time_text = tessvf.int_time_to_text(oldTime)
-        print(f"time: {time_text}")
-        #continue
-        #Blue SB
-        bluesb_img = pi.pre_img(bluesb_region,300, threshold=(120,255),blur=(3,3))
-        cv2.imshow('bluesb_region', bluesb_img)
-        if cv2.waitKey(1) & 0xFF==ord('0'):
-            break   
+    #--------------- Red scoreboard begins ------------------- #
+    redsb_region = gray_array[850:1070, 1005:1195]
+    redsb_img = pi.pre_img(redsb_region, 300, threshold=(80,255),blur=(1,1))
+    redpytest = pytesseract.image_to_string(redsb_img,config=redsb_config)
 
-        bluepytest = pytesseract.image_to_string(bluesb_img,config=bluesb_config)
-        #print(f"Blue side:\n{bluepytest}")
+    #Verify red scoreboard
+    verified_redsb = tessvf.redsb(redpytest)    
+
+    if verified_redsb == False:
+        print("Red scoreboard not valid")
+        continue
+    #else:
+    #print("success, continuing")
+    print(f"Red scoreboard: {verified_redsb}")
+
+    #-------------- Auxiliary Header Scoreboard ------------- #
+    #Create one preprocessed image and then splice from there
+    header_score = gray_array[25:60,735:1210]
+    header_score_img = pi.pre_img(header_score, 100, threshold=(120,255), blur=(1,1))
+    cv2.imshow('header_score_img',header_score_img)
+    if cv2.waitKey(1) & 0xFF==ord('0'):
+        break
+    #------------ Towers --------------#
+    #Towers Taken
+
+    blue_towers = header_score_img[0:35,0:25] 
+    blue_towers_num = pytesseract.image_to_string(blue_towers, config=header_config)
+    #print("Blue towers taken: " + blue_towers_num)
+    #Use this as a debugging too whenever you need to check on an image
+
+    red_towers = header_score_img[0:35,455:475]
+    red_towers_num = pytesseract.image_to_string(red_towers, config=header_config)
+    #print("Red towers taken: " + red_towers_num)
+    #------------ Gold --------------#
+    #Total Gold
 
 
-        #Verify Blue scoreboard
-        verified_bluesb = tessvf.bluesb(bluepytest)
+    blue_gold = header_score_img[0:35,75:145]
+    blue_gold_num = pytesseract.image_to_string(blue_gold, config=header_config)
+    #print("Total Blue Gold: " + blue_gold_num)
 
-        if verified_bluesb == False:
-            print("NOT A VALID SCOREBOARD BUT KEEP GOING!")
-            continue
-        else:
-            #print("success, continuing")
-            print(verified_bluesb)
+    red_gold = header_score_img[0:35, 335:410]
+    red_gold_num = pytesseract.image_to_string(red_gold, config=header_config)
+    #print("Total Red Gold: " + red_gold_num)
+    #------------ Kills --------------#
+    #Total Kills
+    blue_kills = header_score_img[0:35, 185:215] 
+    blue_kills_num = pytesseract.image_to_string(blue_kills, config=header_config)
+    #print("Total blue kills:" + blue_kills_num)
 
 
-        #Red SB
-        redsb_region = gray_array[850:1070, 1005:1195]
-        redsb_img = pi.pre_img(redsb_region, 250, threshold=(90,255),blur=(1,1))
-
-        redpytest = pytesseract.image_to_string(redsb_img,config=redsb_config)
-        #print(f"Red side:\n{redpytest}")
-
-        #Verify red scoreboard
-        verified_redsb = tessvf.redsb(redpytest)    
-
-        if verified_redsb == False:
-            print("NOT A VALID SCOREBOARD BUT KEEP GOING!")
-            continue
-        else:
-            #print("success, continuing")
-            print(verified_redsb)
-    
+    red_kills = header_score_img[0:35, 235:275] 
+    red_kills_num = pytesseract.image_to_string(red_kills, config=header_config)
+    #print("Total red kills: " + red_kills_num)            
         
-    
-    
-
-    # get the end time
-    #et = time.time()
-    #time.sleep(interval - (et-st))
-    #mimicsleep = interval- (et-st)
-    
-    #print(f"time slept is {mimicsleep}")
-    
-    
-    #totaltime += mimicsleep + (et-st)
-    #print(f"total time elapsed is {totaltime} seconds")
-    
-    
+    #et = time.time()    
     #elapsed_time = et - st
     #print('Execution time:', elapsed_time, 'seconds')
     

@@ -28,7 +28,7 @@ def bluesb(bluepytext):
 
 
     if verify_sb(bluestats) is False:
-        print("Bad scoreboard!")
+        #print("Bad scoreboard!")
         notValid = False
         return notValid
     else: 
@@ -64,7 +64,7 @@ def redsb(redpytext):
 
 
     if verify_sb(redstats) is False:
-        print("Bad scoreboard!")
+        #print("Bad scoreboard!")
         notValid = False
         return notValid
     else:
@@ -139,3 +139,6 @@ def int_time_to_text(time_int):
 
 #def text_to_data(scoreboardtext):
 #    pass
+
+#def blue_total_gold(blue_total_gold_text):
+#
