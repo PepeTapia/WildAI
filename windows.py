@@ -7,6 +7,7 @@ import pytesseract
 from PIL import Image
 import pyautogui
 import wildscripts as ws
+import pandas as pd
 #No availability on macbook m1
 #import pyautogui
 #This is the editable configuration used
@@ -84,9 +85,9 @@ def pre_img(img_array, scale, threshold=(120,255), blur=(1,1)):
 blue_dict_opt = {
             'time': None,
             'team': None,
-            'towers': None,
-            'team_gold': None,
-            'team_kills': None,
+            'towers': 0,
+            'team_gold': 0,
+            'team_kills': 0,
             'top_kill': None,
             'top_death': None,
             'top_assist': None,
@@ -111,9 +112,9 @@ blue_dict_opt = {
 blue_dict_csv = {
             'time': None,
             'team': None,
-            'towers': None,
-            'team_gold': None,
-            'team_kills': None,
+            'towers': 0,
+            'team_gold': 0,
+            'team_kills': 0,
             'top_kill': None,
             'top_death': None,
             'top_assist': None,
@@ -139,9 +140,9 @@ blue_dict_csv = {
 red_dict_opt = {
             'time': None,
             'team': None,
-            'towers': None,
-            'team_gold': None,
-            'team_kills': None,
+            'towers': 0,
+            'team_gold': 0,
+            'team_kills': 0,
             'top_kill': None,
             'top_death': None,
             'top_assist': None,
@@ -166,9 +167,9 @@ red_dict_opt = {
 red_dict_csv = {
             'time': None,
             'team': None,
-            'towers': None,
-            'team_gold': None,
-            'team_kills': None,
+            'towers': 0,
+            'team_gold': 0,
+            'team_kills': 0,
             'top_kill': None,
             'top_death': None,
             'top_assist': None,
@@ -206,6 +207,15 @@ red_gold_opt = 0
 #-----team_kills-----#
 blue_kills_opt = 0
 red_kills_opt = 0
+
+
+
+#----------- Pandas and File setup -------------- #
+game_num = 1
+base = os.getcwd()
+title = input("""Enter folder title. Format should be similar to 'Team A vs Team B Series (Play-in/Group/Knockout)  """)
+os.makedirs(f'WildAI\Datasets\{title}',exist_ok=True)
+output_csv = os.path.join(base, f'WildAI\Datasets\{title}\Game{game_num}.csv')
 
 
 #-------------------- Begin Processing ------------------------- #
@@ -251,9 +261,9 @@ while True:
     #Create one preprocessed image and then splice from there
     header_score = gray_array[25:60,735:1210]
     header_score_img = pre_img(header_score, 100, threshold=(110,255), blur=(1,1))
-    #cv2.imshow('header_score_img',header_score_img)
-    #if cv2.waitKey(1) & 0xFF==ord('0'):
-    #    break
+    cv2.imshow('header_score_img',header_score_img)
+    if cv2.waitKey(1) & 0xFF==ord('0'):
+        break
     #------------ towers --------------#
     #Towers Taken
     #--- blue towers --- #
@@ -262,22 +272,24 @@ while True:
     blue_towers_verified = ws.header_int_verify(blue_towers_num)
     if blue_towers_verified == False:
         blue_dict_csv['towers'] = blue_dict_opt.get('towers')
-    if ((blue_dict_opt.get('towers') == None)) or (blue_dict_csv.get('towers')>blue_dict_opt.get('towers')):    
+    elif ((blue_towers_verified != False)) and ( blue_towers_verified > blue_dict_opt.get('towers')):    
         blue_dict_csv['towers'] = blue_towers_verified
         blue_dict_opt['towers'] = blue_towers_verified
-    else:
-        blue_dict_csv['towers'] = blue_dict_opt.get('towers')
+    # else:
+    #     blue_dict_csv['towers'] = blue_dict_opt.get('towers')
     #--- red towers --- #
-    red_towers = header_score_img[0:35,455:475]
+    red_towers = header_score_img[0:35,450:476]
     red_towers_num = pytesseract.image_to_string(red_towers, config=header_config)
     red_towers_verified = ws.header_int_verify(red_towers_num)
     if red_towers_verified == False:
         red_dict_csv['towers'] = red_dict_opt.get('towers')
-    if ((red_dict_opt.get('towers') == None)) or (red_dict_csv.get('towers')>red_dict_opt.get('towers')):    
+    elif ((red_towers_verified != False)) and ( red_towers_verified > red_dict_opt.get('towers')):    
         red_dict_csv['towers'] = red_towers_verified
         red_dict_opt['towers'] = red_towers_verified
-    else:
-        red_dict_csv['towers'] = red_dict_opt.get('towers')
+    # else:
+    #     red_dict_csv['towers'] = red_dict_opt.get('towers')
+
+
     #------------ team_gold --------------#
     #--- blue gold --- #
     blue_gold = header_score_img[0:35,75:145]
@@ -285,11 +297,11 @@ while True:
     blue_gold_int = ws.team_gold_verify(blue_gold_num)
     if blue_gold_int == False:
         blue_dict_csv['team_gold'] = blue_dict_opt.get('team_gold')
-    if ((blue_dict_opt.get('team_gold') == None)) or (blue_dict_csv.get('team_gold')>blue_dict_opt.get('team_gold')):
+    elif ((blue_gold_int != False)) and (blue_gold_int > blue_dict_opt.get('team_gold')):
         blue_dict_csv['team_gold'] = blue_gold_int
         blue_dict_opt['team_gold'] = blue_gold_int
-    else:
-        blue_dict_csv['team_gold'] = blue_dict_opt.get('team_gold')
+    # else:
+    #     blue_dict_csv['team_gold'] = blue_dict_opt.get('team_gold')
 
     #--- red gold --- #
     red_gold = header_score_img[0:35, 335:410]
@@ -297,11 +309,11 @@ while True:
     red_gold_int = ws.team_gold_verify(red_gold_num)
     if red_gold_int == False:
         red_dict_csv['team_gold'] = red_dict_opt.get('team_gold')
-    if ((red_dict_opt.get('team_gold') == None)) or (red_dict_csv.get('team_gold')>red_dict_opt.get('team_gold')):
+    elif (red_gold_int != False):
         red_dict_csv['team_gold'] = red_gold_int
         red_dict_opt['team_gold'] = red_gold_int
-    else:
-        red_dict_csv['team_gold'] = red_dict_opt.get('team_gold')
+    # else:
+    #     red_dict_csv['team_gold'] = red_dict_opt.get('team_gold')
 
 
 
@@ -312,11 +324,11 @@ while True:
     blue_kills_verified = ws.header_int_verify(blue_kills_num)
     if blue_kills_verified == False:
         blue_dict_csv['team_kills'] = blue_dict_opt.get('team_kills')
-    if ((blue_dict_opt.get('team_kills') == None)) or (blue_dict_csv.get('team_kills')>blue_dict_opt.get('team_kills')):
+    elif ((blue_kills_verified != False)) and (blue_kills_verified > blue_dict_opt.get('team_kills')):
         blue_dict_csv['team_kills'] = blue_kills_verified
         blue_dict_opt['team_kills'] = blue_kills_verified
-    else:
-        blue_dict_csv['team_kills'] = blue_dict_opt.get('team_kills')
+    # else:
+    #     blue_dict_csv['team_kills'] = blue_dict_opt.get('team_kills')
 
     #--- red kills --- #
     red_kills = header_score_img[0:35, 235:275] 
@@ -324,11 +336,11 @@ while True:
     red_kills_verified = ws.header_int_verify(red_kills_num)
     if red_kills_verified == False:
         red_dict_csv['team_kills'] = red_dict_opt.get('team_kills')
-    elif ((red_dict_opt.get('team_kills') == None)) or (red_dict_csv.get('team_kills')>red_dict_opt.get('team_kills')):
+    elif ((red_kills_verified != False)) and (red_kills_verified > red_dict_opt.get('team_kills')):
         red_dict_csv['team_kills'] = red_kills_verified
         red_dict_opt['team_kills'] = red_kills_verified
-    else:
-        red_dict_csv['team_kills'] = red_dict_opt.get('team_kills')
+    # else:
+    #     red_dict_csv['team_kills'] = red_dict_opt.get('team_kills')
 
     # print(f"""
     # Blue Towers Taken: {blue_towers_num}
@@ -341,10 +353,10 @@ while True:
     #print(blue_dict_csv)
     #print(red_dict)    
     #Time logic to continue to new loop
-    if newTime <= oldTime:
+    
+    if newTime == oldTime:
         continue
-    #oldTime = newTime
-
+    oldTime = newTime
 
     #---------------Blue scoreboard begins --------------------#
     bluesb_region = gray_array[850:1070,720:915]
@@ -363,16 +375,25 @@ while True:
 
     #--------------- Red scoreboard begins ------------------- #
     redsb_region = gray_array[850:1070, 1005:1195]
-    redsb_img = pre_img(redsb_region, 300, threshold=(80,255),blur=(1,1))
+    redsb_img = pre_img(redsb_region, 200, threshold=(85,255),blur=(3,3))
     redpytest = pytesseract.image_to_string(redsb_img,config=redsb_config)
-    cv2.imshow('header_score_img',redsb_img)
-    if cv2.waitKey(1) & 0xFF==ord('0'):
-        break
+    #cv2.imshow('header_score_img',redsb_img)
+    #if cv2.waitKey(1) & 0xFF==ord('0'):
+    #0    break
     #Verify red scoreboard
     verified_redsb = ws.verify_redsb(redpytest)
     if verified_redsb == False:
         print("Red scoreboard not valid")
         continue
+
+    # if ((verified_bluesb == False) or (verified_redsb == False)):
+    #     blue_df = pd.DataFrame(blue_dict_opt,index=[newTime])
+    #     red_df = pd.DataFrame(red_dict_opt,index=[newTime])
+    #     #df.to_csv(output_csv,mode='a',index=False,header=False)
+    #     with open(output_csv, 'a') as f:
+    #         blue_df.to_csv(f, header=f.tell()==0)
+    #         red_df.to_csv(f,header=f.tell()==0)
+    #     continue
     #else:
     #print("success, continuing")
     #print(f"Red scoreboard: {verified_redsb}")
@@ -440,6 +461,12 @@ while True:
     #         red_dict_csv[y[0]] = final_redstats[iter]
     print(f"blue_dict_csv:{blue_dict_csv}\n")
     print(f"red_dict_csv: {red_dict_csv}\n") 
+    blue_df = pd.DataFrame(blue_dict_csv,index=[oldTime])
+    red_df = pd.DataFrame(red_dict_csv,index=[oldTime])
+    #df.to_csv(output_csv,mode='a',index=False,header=False)
+    with open(output_csv, 'a') as f:
+        blue_df.to_csv(f, header=f.tell()==0)
+        red_df.to_csv(f,header=f.tell()==0)
     #et = time.time()    
     #elapsed_time = et - st
     #print('Execution time:', elapsed_time, 'seconds')

@@ -151,6 +151,7 @@ def team_gold_verify(team_gold):
 def header_int_verify(tower_or_kills):
     tok_temp = tower_or_kills.strip('\x0c')
     tok_stripped = tok_temp.strip('\n')
+    #print("tok_stripped is: " + tok_stripped)
     if tok_stripped == '':
         return False
     else:
