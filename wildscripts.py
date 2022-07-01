@@ -1,9 +1,11 @@
 #This module contains verification methods that interact with regions of interest to text
 
-import re 
+import re
+
+from numpy import empty 
 
 
-def bluesb(bluepytext):
+def verify_bluesb(bluepytext):
     notValid = None
     #Blue stats list that will ultimately be returned
     bluestats= []
@@ -36,7 +38,7 @@ def bluesb(bluepytext):
 
 
 
-def redsb(redpytext):
+def verify_redsb(redpytext):
     notValid = None
 
     #Red stats list that will ultimately be returned
@@ -94,7 +96,7 @@ def verify_sb(sbtext):
     return verify
 
 # This script takes int and turns it into a 00:00 min:sec time 
-def time(timetext):
+def verify_time(timetext):
     #The base case will be used as a comparison to keep track of the time. 
     #If the incoming time is less than or the same as the cached time - False and you can continue in the main function
     #If the incoming time is greater than the cached time - True and you can finish the main function
@@ -136,9 +138,20 @@ def int_time_to_text(time_int):
     #print(seconds)
     return time_string
 
+def team_gold_verify(team_gold):
+    team_temp = team_gold.strip('\x0c')
+    team_gold = team_temp.strip('\n')
+    #print(team_gold)
+    if team_gold == '':
+        return False
+    else:
+        new_gold = int(team_gold) * 100
+        return new_gold
 
-#def text_to_data(scoreboardtext):
-#    pass
-
-#def blue_total_gold(blue_total_gold_text):
-#
+def header_int_verify(tower_or_kills):
+    tok_temp = tower_or_kills.strip('\x0c')
+    tok_stripped = tok_temp.strip('\n')
+    if tok_stripped == '':
+        return False
+    else:
+        return int(tok_stripped)
