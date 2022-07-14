@@ -1,13 +1,14 @@
-import torch
-from matplotlib import pyplot as plt
+#import torch
+#from matplotlib import pyplot as plt
 import numpy as np
 import cv2
 import os
 import pytesseract
-from PIL import Image
+#from PIL import Image
 import pyautogui
 import wildscripts as ws
 import pandas as pd
+import math
 #No availability on macbook m1
 #import pyautogui
 #This is the editable configuration used
@@ -208,21 +209,25 @@ red_gold_opt = 0
 blue_kills_opt = 0
 red_kills_opt = 0
 
-
+#------Ensure that there has been at least one dict_csv output, or "one run has been output to csv" ------#
+csv_run = False
 
 #----------- Pandas and File setup -------------- #
-game_num = 1
+
 base = os.getcwd()
 title = input("""Enter folder title. Format should be similar to 'Team A vs Team B Series (Play-in/Group/Knockout)  """)
+game_num = input("""Enter the game number: """)
+blue_team = input("Blue team?")
+red_team = input("Red team?")
 os.makedirs(f'WildAI\Datasets\{title}',exist_ok=True)
 output_csv = os.path.join(base, f'WildAI\Datasets\{title}\Game{game_num}.csv')
 
 
 #-------------------- Begin Processing ------------------------- #
-blue_dict_csv['team'] = "TF"
-red_dict_csv['team'] = "T1"
-
-
+blue_dict_csv['team'] = blue_team
+red_dict_csv['team'] = red_team
+blue_dict_opt['team'] = blue_team
+red_dict_opt['team'] = red_team
 while True: 
     
     #timer start
@@ -238,52 +243,57 @@ while True:
     #Preprocess img for pytesseract
     time_img = pre_img(time_region,600, (150,255))
     #Returns a string to be verified later
-    timetest = pytesseract.image_to_string(time_img,config=time_config)
-    #print(f"In game time:\n{timetest}")
+    pytess_time = pytesseract.image_to_string(time_img,config=time_config)
+    #print(f"In game time:\n{pytess_time}")
 
-
-    #Verify that a time exists by turning it from a string into an integer, ensuring that there exist [minutes, seconds] and no fuzzy figures within it.
-    if ws.verify_time(timetest) == False:
+    newTime = ws.verify_time(pytess_time)
+    time_as_text = ws.int_time_to_text(newTime)
+    if newTime == False:
         print("No time found. Likely in replay or not in a game")
         continue
-    #else:
+
     #Timer is an INTEGER variable that can be used later for the dataset - more valuable than a string. 
-    #The string, timetest, can be used for file names though!
-    newTime = ws.verify_time(timetest)
-    blue_dict_csv['time'] = newTime
-    red_dict_csv['time'] = newTime
+    #The string, pytess_time, can be used for file names though!
+    blue_dict_csv['time'] = time_as_text
+    red_dict_csv['time'] = time_as_text
 
     #Time to text for output reasons but I don't think it's needed for csv reasons    
     time_text = ws.int_time_to_text(newTime)
-    print(f"time: {time_text}")
+    #Time logic to continue to new loop
     
+
+    print(f"time: {time_text}")
+    if newTime <= oldTime:
+        print("new is less than or equal to oldtime")
+        continue
     #------------------------------------------- Auxiliary Header Scoreboard ----------------------------------------------- #
     #Create one preprocessed image and then splice from there
     header_score = gray_array[25:60,735:1210]
-    header_score_img = pre_img(header_score, 100, threshold=(110,255), blur=(1,1))
-    cv2.imshow('header_score_img',header_score_img)
-    if cv2.waitKey(1) & 0xFF==ord('0'):
-        break
+    header_score_img = pre_img(header_score, 200, threshold=(115,255), blur=(3,3))
+    # cv2.imshow('header_score_img',header_score_img)
+    # if cv2.waitKey(1) & 0xFF==ord('0'):
+    #     break
     #------------ towers --------------#
     #Towers Taken
     #--- blue towers --- #
-    blue_towers = header_score_img[0:35,0:25] 
+    blue_towers = header_score_img[0:70,0:50] 
     blue_towers_num = pytesseract.image_to_string(blue_towers, config=header_config)
     blue_towers_verified = ws.header_int_verify(blue_towers_num)
+
     if blue_towers_verified == False:
         blue_dict_csv['towers'] = blue_dict_opt.get('towers')
-    elif ((blue_towers_verified != False)) and ( blue_towers_verified > blue_dict_opt.get('towers')):    
+    elif ((blue_towers_verified != False) and (blue_towers_verified >= blue_dict_opt.get('towers'))):    
         blue_dict_csv['towers'] = blue_towers_verified
         blue_dict_opt['towers'] = blue_towers_verified
     # else:
     #     blue_dict_csv['towers'] = blue_dict_opt.get('towers')
     #--- red towers --- #
-    red_towers = header_score_img[0:35,450:476]
+    red_towers = header_score_img[0:70,895:960]
     red_towers_num = pytesseract.image_to_string(red_towers, config=header_config)
     red_towers_verified = ws.header_int_verify(red_towers_num)
     if red_towers_verified == False:
         red_dict_csv['towers'] = red_dict_opt.get('towers')
-    elif ((red_towers_verified != False)) and ( red_towers_verified > red_dict_opt.get('towers')):    
+    elif ((red_towers_verified != False) and (red_towers_verified >= red_dict_opt.get('towers'))):    
         red_dict_csv['towers'] = red_towers_verified
         red_dict_opt['towers'] = red_towers_verified
     # else:
@@ -292,26 +302,26 @@ while True:
 
     #------------ team_gold --------------#
     #--- blue gold --- #
-    blue_gold = header_score_img[0:35,75:145]
+    blue_gold = header_score_img[0:70,150:290]
     blue_gold_num = pytesseract.image_to_string(blue_gold, config=header_config)
-    blue_gold_int = ws.team_gold_verify(blue_gold_num)
-    if blue_gold_int == False:
+    blue_gold_verified = ws.team_gold_verify(blue_gold_num)
+
+    if ((blue_gold_verified == False) or (blue_gold_verified < blue_dict_csv.get('team_gold'))):
         blue_dict_csv['team_gold'] = blue_dict_opt.get('team_gold')
-    elif ((blue_gold_int != False)) and (blue_gold_int > blue_dict_opt.get('team_gold')):
-        blue_dict_csv['team_gold'] = blue_gold_int
-        blue_dict_opt['team_gold'] = blue_gold_int
-    # else:
-    #     blue_dict_csv['team_gold'] = blue_dict_opt.get('team_gold')
+    elif ((blue_gold_verified != False) and (blue_gold_verified >= blue_dict_opt.get('team_gold'))):
+        blue_dict_csv['team_gold'] = blue_gold_verified
+        blue_dict_opt['team_gold'] = blue_gold_verified
 
     #--- red gold --- #
-    red_gold = header_score_img[0:35, 335:410]
+    red_gold = header_score_img[0:70, 670:820]
     red_gold_num = pytesseract.image_to_string(red_gold, config=header_config)
-    red_gold_int = ws.team_gold_verify(red_gold_num)
-    if red_gold_int == False:
+    red_gold_verified = ws.team_gold_verify(red_gold_num)
+    if ((red_gold_verified == False) and (red_gold_verified < red_dict_csv.get('team_gold'))):
         red_dict_csv['team_gold'] = red_dict_opt.get('team_gold')
-    elif (red_gold_int != False):
-        red_dict_csv['team_gold'] = red_gold_int
-        red_dict_opt['team_gold'] = red_gold_int
+        
+    elif ((red_gold_verified != False) and (red_gold_verified >= red_dict_opt.get('team_gold'))):
+        red_dict_csv['team_gold'] = red_gold_verified
+        red_dict_opt['team_gold'] = red_gold_verified
     # else:
     #     red_dict_csv['team_gold'] = red_dict_opt.get('team_gold')
 
@@ -319,56 +329,63 @@ while True:
 
     #------------ team_kills --------------#
     #--- blue kills --- #
-    blue_kills = header_score_img[0:35, 185:215] 
+    blue_kills = header_score_img[0:70, 350:430] 
     blue_kills_num = pytesseract.image_to_string(blue_kills, config=header_config)
     blue_kills_verified = ws.header_int_verify(blue_kills_num)
     if blue_kills_verified == False:
         blue_dict_csv['team_kills'] = blue_dict_opt.get('team_kills')
-    elif ((blue_kills_verified != False)) and (blue_kills_verified > blue_dict_opt.get('team_kills')):
+    elif ((blue_kills_verified != False) and (blue_kills_verified >= blue_dict_opt.get('team_kills'))):
         blue_dict_csv['team_kills'] = blue_kills_verified
         blue_dict_opt['team_kills'] = blue_kills_verified
-    # else:
-    #     blue_dict_csv['team_kills'] = blue_dict_opt.get('team_kills')
 
     #--- red kills --- #
-    red_kills = header_score_img[0:35, 235:275] 
+    red_kills = header_score_img[0:70, 475:540] 
     red_kills_num = pytesseract.image_to_string(red_kills, config=header_config)
     red_kills_verified = ws.header_int_verify(red_kills_num)
+
     if red_kills_verified == False:
         red_dict_csv['team_kills'] = red_dict_opt.get('team_kills')
-    elif ((red_kills_verified != False)) and (red_kills_verified > red_dict_opt.get('team_kills')):
+    elif ((red_kills_verified != False) and (red_kills_verified >= red_dict_opt.get('team_kills'))):
         red_dict_csv['team_kills'] = red_kills_verified
         red_dict_opt['team_kills'] = red_kills_verified
-    # else:
-    #     red_dict_csv['team_kills'] = red_dict_opt.get('team_kills')
 
-    # print(f"""
-    # Blue Towers Taken: {blue_towers_num}
-    # Blue Team Gold: {blue_gold_int}
-    # Blue Team Kills: {blue_kills_num}
-    # Red Towers Taken: {red_towers_num}
-    # Red Team Gold: {red_gold_int}
-    # Red Team Kills: {red_kills_num}
-    # """)
-    #print(blue_dict_csv)
-    #print(red_dict)    
-    #Time logic to continue to new loop
-    
-    if newTime == oldTime:
-        continue
+    # #Output header data to a csv in the case that:
+        
     oldTime = newTime
+    #-----------------------------------------------------------------#
+    #------------------ SCOREBOARDS HERE -----------------------------#
+    #-----------------------------------------------------------------#
+
 
     #---------------Blue scoreboard begins --------------------#
     bluesb_region = gray_array[850:1070,720:915]
-    bluesb_img = pre_img(bluesb_region,250, threshold=(120,255),blur=(1,1))
+    bluesb_img = pre_img(bluesb_region,200, threshold=(115,255),blur=(1,1))
     bluepytest = pytesseract.image_to_string(bluesb_img,config=bluesb_config)
 
     #Verify Blue scoreboard
     verified_bluesb = ws.verify_bluesb(bluepytest)
-
-    if verified_bluesb == False:
-        print("Blue scoreboard not valid")
+    if verified_bluesb == False and csv_run == False:
+        print("Blue score board not read and a successful run has not been complete")
         continue
+
+    elif verified_bluesb == False and csv_run == True:
+        blue_dict_opt['time'] = time_as_text
+        blue_dict_opt['towers'] = blue_dict_opt.get('towers')
+        blue_dict_opt['team_gold'] = blue_dict_opt.get('team_gold')
+        blue_dict_opt['team_kills'] = blue_dict_opt.get('team_kills')
+        red_dict_opt['time'] = time_as_text
+        red_dict_opt['towers'] = red_dict_opt.get('towers')
+        red_dict_opt['team_gold'] = red_dict_opt.get('team_gold')
+        red_dict_opt['team_kills'] = red_dict_opt.get('team_kills')
+        blueopt_df = pd.DataFrame(blue_dict_opt,index=[newTime])
+        redopt_df = pd.DataFrame(red_dict_opt,index=[newTime])
+        #df.to_csv(output_csv,mode='a',index=False,header=False)
+        with open(output_csv, 'a') as f:
+            blueopt_df.to_csv(f, index_label='Time',header=f.tell()==0)
+            redopt_df.to_csv(f, index_label='Time',header=f.tell()==0)
+        print("output from verified_bluesb failing")
+        continue
+    
     #else:
     #print("success, continuing")
     #print(f"Blue scoreboard: {verified_bluesb}")
@@ -382,8 +399,25 @@ while True:
     #0    break
     #Verify red scoreboard
     verified_redsb = ws.verify_redsb(redpytest)
-    if verified_redsb == False:
-        print("Red scoreboard not valid")
+    if verified_redsb == False and csv_run == False:
+        print("red score board not read and a successful run has not been complete")
+        continue
+    elif verified_redsb == False and csv_run == True:
+        blue_dict_opt['time'] = time_as_text
+        blue_dict_opt['towers'] = blue_dict_opt.get('towers')
+        blue_dict_opt['team_gold'] = blue_dict_opt.get('team_gold')
+        blue_dict_opt['team_kills'] = blue_dict_opt.get('team_kills')
+        red_dict_opt['time'] = time_as_text
+        red_dict_opt['towers'] = red_dict_opt.get('towers')
+        red_dict_opt['team_gold'] = red_dict_opt.get('team_gold')
+        red_dict_opt['team_kills'] = red_dict_opt.get('team_kills')
+        blueopt_df = pd.DataFrame(blue_dict_opt,index=[newTime])
+        redopt_df = pd.DataFrame(red_dict_opt,index=[newTime])
+        #df.to_csv(output_csv,mode='a',index=False,header=False)
+        with open(output_csv, 'a') as f:
+            blueopt_df.to_csv(f, index_label='Time',header=f.tell()==0)
+            redopt_df.to_csv(f, index_label='Time',header=f.tell()==0)
+        print("output from verified_Redsb failing")
         continue
 
     # if ((verified_bluesb == False) or (verified_redsb == False)):
@@ -448,6 +482,18 @@ while True:
     red_dict_csv['supp_assist'] = final_redstats[18]
     red_dict_csv['supp_gold'] = final_redstats[19]
 
+    blue_gold_sum = int(final_bluestats[3]) + int(final_bluestats[7]) + int(final_bluestats[11]) + int(final_bluestats[15]) + int(final_bluestats[19])
+    red_gold_sum = int(final_redstats[3]) + int(final_redstats[7]) + int(final_redstats[11]) + int(final_redstats[15]) + int(final_redstats[19])
+
+    blue_gold_rounded = round(blue_gold_sum/100)*100
+    red_gold_rounded = round(red_gold_sum/100)*100
+
+    if blue_gold_rounded < blue_dict_opt.get('team_gold'):
+        blue_dict_csv['team_gold'] = blue_gold_rounded
+        blue_dict_opt['team_gold'] = blue_gold_rounded
+    if red_gold_rounded < blue_dict_opt.get('team_gold'):
+        red_dict_csv['team_gold'] = red_gold_rounded
+        red_dict_opt['team_gold'] = red_gold_rounded    
     blue_dict_opt.update(blue_dict_csv)
     red_dict_opt.update(red_dict_csv)
     # for x, y in enumerate(blue_dict_csv.items()):
@@ -461,15 +507,18 @@ while True:
     #         red_dict_csv[y[0]] = final_redstats[iter]
     print(f"blue_dict_csv:{blue_dict_csv}\n")
     print(f"red_dict_csv: {red_dict_csv}\n") 
-    blue_df = pd.DataFrame(blue_dict_csv,index=[oldTime])
-    red_df = pd.DataFrame(red_dict_csv,index=[oldTime])
+
+    blue_df = pd.DataFrame(blue_dict_csv,index=[newTime])
+    red_df = pd.DataFrame(red_dict_csv,index=[newTime])
     #df.to_csv(output_csv,mode='a',index=False,header=False)
     with open(output_csv, 'a') as f:
-        blue_df.to_csv(f, header=f.tell()==0)
-        red_df.to_csv(f,header=f.tell()==0)
+        blue_df.to_csv(f, index_label='Time',header=f.tell()==0)
+        red_df.to_csv(f, index_label='Time',header=f.tell()==0)
+    csv_run = True
+    print("CSV_RUN COMPLETE!")
     #et = time.time()    
     #elapsed_time = et - st
     #print('Execution time:', elapsed_time, 'seconds')
-    
+
 cv2.destroyAllWindows()
 

@@ -2,8 +2,6 @@
 
 import re
 
-from numpy import empty 
-
 
 def verify_bluesb(bluepytext):
     notValid = None
@@ -121,11 +119,16 @@ def verify_time(timetext):
         
         #String of "MM:SS" turned into integer of seconds
         #timetemp[0] is minutes, turn into seconds
-        tempMinutes = int(timetemp[0]) * 60
-        #timetemp[1] is seconds, add tempMinutes for total seconds
-        seconds = int(timetemp[1]) + tempMinutes
-        #print(seconds)
-        return seconds
+        try:
+            tempMinutes = int(timetemp[0]) * 60
+            #timetemp[1] is seconds, add tempMinutes for total seconds
+            seconds = int(timetemp[1]) + tempMinutes
+            #print(seconds)
+        except ValueError:
+            verify = False
+            return verify
+        else:
+            return seconds
 
 
 
@@ -140,7 +143,9 @@ def int_time_to_text(time_int):
 
 def team_gold_verify(team_gold):
     team_temp = team_gold.strip('\x0c')
-    team_gold = team_temp.strip('\n')
+    team_temp_spaces = team_temp.replace(" ", "")
+    team_gold = team_temp_spaces.strip('\n')
+    
     #print(team_gold)
     if team_gold == '':
         return False
