@@ -15,7 +15,7 @@ import math
 bluesb_config = r'--oem 1 --psm 6 -c tessedit_char_whitelist="0123456789/"'
 redsb_config = r'--oem 1 --psm 6 -c tessedit_char_whitelist="0123456789/"'
 time_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=":0123456789"'
-header_config = r'--oem 3 --psm 6 digits -c tessedit_char_whitelist="0123456789"'
+header_config = r'--oem 1 --psm 7 digits -c tessedit_char_whitelist="0123456789"'
 
 STATS_HEADER = ["time", "team","top_kill", "top_death", "top_assist", "top_gold",
                 "jungle_kill", "jungle_death", "jungle_assist", "jungle_gold",
@@ -269,7 +269,7 @@ while True:
     #------------------------------------------- Auxiliary Header Scoreboard ----------------------------------------------- #
     #Create one preprocessed image and then splice from there
     header_score = gray_array[25:60,735:1210]
-    header_score_img = pre_img(header_score, 200, threshold=(115,255), blur=(3,3))
+    header_score_img = pre_img(header_score, 200, threshold=(130,255), blur=(1,1))
     # cv2.imshow('header_score_img',header_score_img)
     # if cv2.waitKey(1) & 0xFF==ord('0'):
     #     break
@@ -282,22 +282,21 @@ while True:
 
     if blue_towers_verified == False:
         blue_dict_csv['towers'] = blue_dict_opt.get('towers')
-    elif ((blue_towers_verified != False) and (blue_towers_verified >= blue_dict_opt.get('towers'))):    
+    elif blue_towers_verified != False and blue_towers_verified >= blue_dict_opt.get('towers'):    
         blue_dict_csv['towers'] = blue_towers_verified
         blue_dict_opt['towers'] = blue_towers_verified
     # else:
     #     blue_dict_csv['towers'] = blue_dict_opt.get('towers')
     #--- red towers --- #
-    red_towers = header_score_img[0:70,895:960]
+    red_towers = header_score_img[0:70,898:960]
     red_towers_num = pytesseract.image_to_string(red_towers, config=header_config)
     red_towers_verified = ws.header_int_verify(red_towers_num)
+ 
     if red_towers_verified == False:
         red_dict_csv['towers'] = red_dict_opt.get('towers')
-    elif ((red_towers_verified != False) and (red_towers_verified >= red_dict_opt.get('towers'))):    
+    elif red_towers_verified != False and red_towers_verified >= red_dict_opt.get('towers'):    
         red_dict_csv['towers'] = red_towers_verified
         red_dict_opt['towers'] = red_towers_verified
-    # else:
-    #     red_dict_csv['towers'] = red_dict_opt.get('towers')
 
 
     #------------ team_gold --------------#
@@ -306,9 +305,9 @@ while True:
     blue_gold_num = pytesseract.image_to_string(blue_gold, config=header_config)
     blue_gold_verified = ws.team_gold_verify(blue_gold_num)
 
-    if ((blue_gold_verified == False) or (blue_gold_verified < blue_dict_csv.get('team_gold'))):
+    if blue_gold_verified == False or blue_gold_verified < blue_dict_csv.get('team_gold'):
         blue_dict_csv['team_gold'] = blue_dict_opt.get('team_gold')
-    elif ((blue_gold_verified != False) and (blue_gold_verified >= blue_dict_opt.get('team_gold'))):
+    elif blue_gold_verified != False and blue_gold_verified >= blue_dict_opt.get('team_gold'):
         blue_dict_csv['team_gold'] = blue_gold_verified
         blue_dict_opt['team_gold'] = blue_gold_verified
 
@@ -316,10 +315,10 @@ while True:
     red_gold = header_score_img[0:70, 670:820]
     red_gold_num = pytesseract.image_to_string(red_gold, config=header_config)
     red_gold_verified = ws.team_gold_verify(red_gold_num)
-    if ((red_gold_verified == False) and (red_gold_verified < red_dict_csv.get('team_gold'))):
-        red_dict_csv['team_gold'] = red_dict_opt.get('team_gold')
-        
-    elif ((red_gold_verified != False) and (red_gold_verified >= red_dict_opt.get('team_gold'))):
+
+    if red_gold_verified == False and red_gold_verified < red_dict_csv.get('team_gold'):
+        red_dict_csv['team_gold'] = red_dict_opt.get('team_gold')      
+    elif red_gold_verified != False and red_gold_verified >= red_dict_opt.get('team_gold'):
         red_dict_csv['team_gold'] = red_gold_verified
         red_dict_opt['team_gold'] = red_gold_verified
     # else:
@@ -332,9 +331,10 @@ while True:
     blue_kills = header_score_img[0:70, 350:430] 
     blue_kills_num = pytesseract.image_to_string(blue_kills, config=header_config)
     blue_kills_verified = ws.header_int_verify(blue_kills_num)
+
     if blue_kills_verified == False:
         blue_dict_csv['team_kills'] = blue_dict_opt.get('team_kills')
-    elif ((blue_kills_verified != False) and (blue_kills_verified >= blue_dict_opt.get('team_kills'))):
+    elif blue_kills_verified != False and blue_kills_verified >= blue_dict_opt.get('team_kills'):
         blue_dict_csv['team_kills'] = blue_kills_verified
         blue_dict_opt['team_kills'] = blue_kills_verified
 
@@ -345,7 +345,7 @@ while True:
 
     if red_kills_verified == False:
         red_dict_csv['team_kills'] = red_dict_opt.get('team_kills')
-    elif ((red_kills_verified != False) and (red_kills_verified >= red_dict_opt.get('team_kills'))):
+    elif red_kills_verified != False and red_kills_verified >= red_dict_opt.get('team_kills'):
         red_dict_csv['team_kills'] = red_kills_verified
         red_dict_opt['team_kills'] = red_kills_verified
 
@@ -370,13 +370,13 @@ while True:
 
     elif verified_bluesb == False and csv_run == True:
         blue_dict_opt['time'] = time_as_text
-        blue_dict_opt['towers'] = blue_dict_opt.get('towers')
-        blue_dict_opt['team_gold'] = blue_dict_opt.get('team_gold')
-        blue_dict_opt['team_kills'] = blue_dict_opt.get('team_kills')
+        # blue_dict_opt['towers'] = blue_dict_opt.get('towers')
+        # blue_dict_opt['team_gold'] = blue_dict_opt.get('team_gold')
+        # blue_dict_opt['team_kills'] = blue_dict_opt.get('team_kills')
         red_dict_opt['time'] = time_as_text
-        red_dict_opt['towers'] = red_dict_opt.get('towers')
-        red_dict_opt['team_gold'] = red_dict_opt.get('team_gold')
-        red_dict_opt['team_kills'] = red_dict_opt.get('team_kills')
+        # red_dict_opt['towers'] = red_dict_opt.get('towers')
+        # red_dict_opt['team_gold'] = red_dict_opt.get('team_gold')
+        # red_dict_opt['team_kills'] = red_dict_opt.get('team_kills')
         blueopt_df = pd.DataFrame(blue_dict_opt,index=[newTime])
         redopt_df = pd.DataFrame(red_dict_opt,index=[newTime])
         #df.to_csv(output_csv,mode='a',index=False,header=False)
@@ -394,23 +394,20 @@ while True:
     redsb_region = gray_array[850:1070, 1005:1195]
     redsb_img = pre_img(redsb_region, 200, threshold=(85,255),blur=(3,3))
     redpytest = pytesseract.image_to_string(redsb_img,config=redsb_config)
-    #cv2.imshow('header_score_img',redsb_img)
-    #if cv2.waitKey(1) & 0xFF==ord('0'):
-    #0    break
-    #Verify red scoreboard
+
     verified_redsb = ws.verify_redsb(redpytest)
     if verified_redsb == False and csv_run == False:
         print("red score board not read and a successful run has not been complete")
         continue
     elif verified_redsb == False and csv_run == True:
         blue_dict_opt['time'] = time_as_text
-        blue_dict_opt['towers'] = blue_dict_opt.get('towers')
-        blue_dict_opt['team_gold'] = blue_dict_opt.get('team_gold')
-        blue_dict_opt['team_kills'] = blue_dict_opt.get('team_kills')
+        # blue_dict_opt['towers'] = blue_dict_opt.get('towers')
+        # blue_dict_opt['team_gold'] = blue_dict_opt.get('team_gold')
+        # blue_dict_opt['team_kills'] = blue_dict_opt.get('team_kills')
         red_dict_opt['time'] = time_as_text
-        red_dict_opt['towers'] = red_dict_opt.get('towers')
-        red_dict_opt['team_gold'] = red_dict_opt.get('team_gold')
-        red_dict_opt['team_kills'] = red_dict_opt.get('team_kills')
+        # red_dict_opt['towers'] = red_dict_opt.get('towers')
+        # red_dict_opt['team_gold'] = red_dict_opt.get('team_gold')
+        # red_dict_opt['team_kills'] = red_dict_opt.get('team_kills')
         blueopt_df = pd.DataFrame(blue_dict_opt,index=[newTime])
         redopt_df = pd.DataFrame(red_dict_opt,index=[newTime])
         #df.to_csv(output_csv,mode='a',index=False,header=False)
@@ -419,18 +416,6 @@ while True:
             redopt_df.to_csv(f, index_label='Time',header=f.tell()==0)
         print("output from verified_Redsb failing")
         continue
-
-    # if ((verified_bluesb == False) or (verified_redsb == False)):
-    #     blue_df = pd.DataFrame(blue_dict_opt,index=[newTime])
-    #     red_df = pd.DataFrame(red_dict_opt,index=[newTime])
-    #     #df.to_csv(output_csv,mode='a',index=False,header=False)
-    #     with open(output_csv, 'a') as f:
-    #         blue_df.to_csv(f, header=f.tell()==0)
-    #         red_df.to_csv(f,header=f.tell()==0)
-    #     continue
-    #else:
-    #print("success, continuing")
-    #print(f"Red scoreboard: {verified_redsb}")
 
 
 
@@ -488,29 +473,20 @@ while True:
     blue_gold_rounded = round(blue_gold_sum/100)*100
     red_gold_rounded = round(red_gold_sum/100)*100
 
-    if blue_gold_rounded < blue_dict_opt.get('team_gold'):
+    if blue_gold_rounded <= blue_dict_csv.get('team_gold'):
         blue_dict_csv['team_gold'] = blue_gold_rounded
         blue_dict_opt['team_gold'] = blue_gold_rounded
-    if red_gold_rounded < blue_dict_opt.get('team_gold'):
+    if red_gold_rounded <= blue_dict_csv.get('team_gold'):
         red_dict_csv['team_gold'] = red_gold_rounded
         red_dict_opt['team_gold'] = red_gold_rounded    
     blue_dict_opt.update(blue_dict_csv)
     red_dict_opt.update(red_dict_csv)
-    # for x, y in enumerate(blue_dict_csv.items()):
-    #     if y[1] is None:
-    #         iter = x-5
-    #         blue_dict_csv[y[0]] = final_bluestats[iter]
 
-    # for x, y in enumerate(red_dict_csv.items()):
-    #     if y[1] is None:
-    #         iter = x-5
-    #         red_dict_csv[y[0]] = final_redstats[iter]
     print(f"blue_dict_csv:{blue_dict_csv}\n")
     print(f"red_dict_csv: {red_dict_csv}\n") 
 
     blue_df = pd.DataFrame(blue_dict_csv,index=[newTime])
     red_df = pd.DataFrame(red_dict_csv,index=[newTime])
-    #df.to_csv(output_csv,mode='a',index=False,header=False)
     with open(output_csv, 'a') as f:
         blue_df.to_csv(f, index_label='Time',header=f.tell()==0)
         red_df.to_csv(f, index_label='Time',header=f.tell()==0)
