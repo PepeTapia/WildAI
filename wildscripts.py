@@ -76,6 +76,7 @@ def verify_sb(sbtext):
     verify = False
     if len(sbtext) == 5:
     #print("it's the right size!")
+
         for player in sbtext:
             if len(player) == 4:
                 for stat in player:
