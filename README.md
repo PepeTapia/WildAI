@@ -1,7 +1,16 @@
 # WildAI
 Wild Rift AI uses Computer Vision techniques to extract text and detect images from video input of a full display of a Wild Rift game.
-
 Consider this a barebones project to get started with screenshots. The current project is still under development and review for long term sustainability, though this is the starting point for anyone wanting to replicate it.
+
+# Table of Contents
+
+- [Why I started this project!](#why-i-started-this-project)
+- [What is the task at hand?](#what-is-the-task-at-hand)
+- [What steps were taken to solve the task?](#what-steps-were-taken-to-solve-the-task)
+- [What were the results to the project?](#what-were-the-results-to-the-project)
+- [Issues and resolutions](#issues-and-resolutions)
+- [What I learned](##what-i-learned)
+
 
 # 1. Why I started this project!
 <p>This project was created for a video game titled "Wild Rift", a mobile phone game created by the company Riot Games. At the time this project was created, there was a competitive esports scene that lacked a proper way to perform data analytics since there was no public API to pull data from. The parent game, League of Legends, has a thriving esports scene through the use of public and private APIs. These teams use Data Science practices to analyze their team and the opposing teams.</p>
@@ -9,17 +18,17 @@ Consider this a barebones project to get started with screenshots. The current p
 # 2. What is the task at hand?
 <p> The Wild Rift game client has two ways to access this data, through a live spectate during the game or a Video On Demand(VOD) after the game has ended. In both modes, teams would have to rewatch the games a few times to analyze their strengths and weaknesses, then they would have to go back again to look at the scoreboard for any significant data such as: Gold Difference, Vision Trinket Usage, Kill/Death/Assist Ratio, and more. My task was the find a way to record as much available data as possible on the given display. </p>
 
-## 2.1 Example of the given display
+2.1 **Example of the given display**
 <p>Screenshot of the game display from which we pull data from. Credit: Riot Games Wild Rift: Icons event.</p>
 
 ![Full screen display that provides access to the Wild Rift game data.](https://github.com/PepeTapia/WildAI/blob/main/images/colorscale_img.png)
 
 # 3. What steps were taken to solve the task?
-## 3.1 Requirements:
+**3.1 Requirements:**
 - Connect a mobile phone display to a streaming or recording platform. 
 - Use a video feed, live streamed or recorded, from the game with the scoreboard open at all times. The program can handle the case where the scoreboard is down for a bit of time, but not too long!
 
-## 3.2 Coding tasks:
+**3.2 Coding tasks:**<br>
 Use Computer Vision tools to extract data from the video feed. I used Pytesseract, a Python Wrapper for Google's Tesseract-OCR Engine. Optical character recognition worked well here because I am grabbing only numbers from 0-10. 
 
 <p>Pytesseract configuration</p>
@@ -30,7 +39,7 @@ Use Computer Vision tools to extract data from the video feed. I used Pytesserac
 
 `pytesseract.image_to_string(time_img,config=time_config)` 
 
-### Step 1: Screenshot a frame and convert it to grayscale. Doing so will help deal with the variety of color that differentiates "Blue" and "Red" side of the teams.
+**Step 1:** Screenshot a frame and convert it to grayscale. Doing so will help deal with the variety of color that differentiates "Blue" and "Red" side of the teams.
 
 ![Grayscale version of the full screen display that provides access to the Wild Rift game data.](https://github.com/PepeTapia/WildAI/blob/main/images/grayscale_img.png)
 
@@ -50,7 +59,7 @@ From here, we categorize the data needed:
 | Blue side bottom scoreboard | 5 Individual rows each containing: Kills/Death/Assists, Gold, Vision Trinket|
 | Red side bottom scoreboard| 5 Individual rows each containing: Kills/Death/Assists, Gold, Vision Trinket |
 
-### Step 2: Image processing must be done to leverage Pytesseract efficiently and I accomplish this by generalizing the image processing with the following transformations:
+**Step 2:** Image processing must be done to leverage Pytesseract efficiently and I accomplish this by generalizing the image processing with the following transformations:
 
 **Parameters:**
 
@@ -105,7 +114,7 @@ return tess_img
 | Blue side bottom scoreboard | ![Grayscale Blue side bottom scoreboard](https://github.com/PepeTapia/WildAI/blob/main/images/bluesb_gray.png) |![Blue side bottom scoreboard postprocess](https://github.com/PepeTapia/WildAI/blob/main/images/bluesb_processed.png) |
 | Red side bottom scoreboard | ![Grayscale Red side bottom scoreboard](https://github.com/PepeTapia/WildAI/blob/main/images/redsb_gray.png) | ![Red side bottom scoreboard postprocess](https://github.com/PepeTapia/WildAI/blob/main/images/redsb_processed.png) |
 
-### Resulting Dataframe
+**Resulting Dataframe**
 
 <p>Screenshot of the terminal</p>
 
@@ -155,7 +164,7 @@ supp_kill,supp_death,supp_assist,supp_gold
 40,00:40,JDG,0,3400,0,0,0,0,733,0,0,0,563,0,0,0,773,0,0,0,693,0,0,0,628
 ```
 
-## Yolov5 testing and potential
+**Yolov5 testing and potential**
 
 I used opencv's matchTemplate() to keep track of Vision Trinkets, creating flags of Active and Unactivate states for them. A bordered trinket indicates the Vision Trinket has not been used and unborded means it has been used. This helps us find patterns for both our players and enemy players.
 
@@ -163,9 +172,9 @@ I used opencv's matchTemplate() to keep track of Vision Trinkets, creating flags
 
 I attempted using Yolov5, and it still has room for exploration for detecting all champions and all items, but that will be for a later time. In most cases it is easiest to just write down the champs in some type of GUI when recording the data.
 
-# Issues and resolutions
+# 4. Issues and resolutions
 
-### Data validation
+**Data validation**
 <p>As you can see from the headers above, there is a gap between index 38 and index 40. Index "39" is missing, but index 29 is not missing. The most common error when starting were the amount of frames being read, typically I would get .75-1.25 framse per second, which makes sense why an index would be skipped. Once I changed to my current methods I improved to 60 frames per second, but if I get a skip at those frames that must mean the OCR is not picking up the time properly.</p>
 
 These can be found in [wildscripts.py](https://github.com/PepeTapia/WildAI/blob/main/wildscripts.py)
@@ -206,8 +215,10 @@ def header_int_verify(tower_or_kills):
 
 
 
-## What were the results to the project?
+# 5. What were the results to the project?
 
 I began this project early in the competitive season, and it helped our team to understand our strengths and weaknesses which led to making data led decisions on top of regular discussions. There is still a lot of room for data processing, cleaning, and potential usage using AI/ML to create fun data points, but I chose to focus more on school which led to newer projects. 
 
-#I learned a lot about this project, including: Computer Vision techniques, YoloV5, Data Processing methods: Extraction, Validation, and creating CSVs. I hope to continue this as a passion project once I finish school!
+# 6. What I learned aboue this project. 
+
+I learned a lot about this project, including: Computer Vision techniques, YoloV5, Data Processing methods: Extraction, Validation, and creating CSVs. I hope to continue this as a passion project once I finish school!
