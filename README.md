@@ -4,12 +4,12 @@ Consider this a barebones project to get started with screenshots. The current p
 
 # Table of Contents
 
-- [Why I started this project!](#why-i-started-this-project)
-- [What is the task at hand?](#what-is-the-task-at-hand)
-- [What steps were taken to solve the task?](#what-steps-were-taken-to-solve-the-task)
-- [What were the results to the project?](#what-were-the-results-to-the-project)
-- [Issues and resolutions](#issues-and-resolutions)
-- [What I learned](#what-i-learned)
+- [Why I started this project!](##why-i-started-this-project)
+- [What is the task at hand?](##what-is-the-task-at-hand)
+- [What steps were taken to solve the task?](##what-steps-were-taken-to-solve-the-task)
+- [What were the results to the project?](##what-were-the-results-to-the-project)
+- [Issues and resolutions](##issues-and-resolutions)
+- [What I learned](##what-i-learned)
 
 
 # 1. Why I started this project!
