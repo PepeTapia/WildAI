@@ -155,6 +155,14 @@ supp_kill,supp_death,supp_assist,supp_gold
 40,00:40,JDG,0,3400,0,0,0,0,733,0,0,0,563,0,0,0,773,0,0,0,693,0,0,0,628
 ```
 
+## Yolov5 testing and potential
+
+I used opencv's matchTemplate() to keep track of Vision Trinkets, creating flags of Active and Unactivate states for them. A bordered trinket indicates the Vision Trinket has not been used and unborded means it has been used. This helps us find patterns for both our players and enemy players.
+
+![Ward detection with yellow borders indicating not used and no borders indicating used]]https://github.com/PepeTapia/WildAI/blob/main/images/wardDetection.gif
+
+I attempted using Yolov5, and it still has room for exploration for detecting all champions and all items, but that will be for a later time. In most cases it is easiest to just write down the champs in some type of GUI when recording the data.
+
 # Issues and resolutions
 
 ### Data validation
@@ -199,3 +207,7 @@ def header_int_verify(tower_or_kills):
 
 
 ## What were the results to the project?
+
+I began this project early in the competitive season, and it helped our team to understand our strengths and weaknesses which led to making data led decisions on top of regular discussions. There is still a lot of room for data processing, cleaning, and potential usage using AI/ML to create fun data points, but I chose to focus more on school which led to newer projects. 
+
+#I learned a lot about this project, including: Computer Vision techniques, YoloV5, Data Processing methods: Extraction, Validation, and creating CSVs. I hope to continue this as a passion project once I finish school!
