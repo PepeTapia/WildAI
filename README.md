@@ -9,7 +9,7 @@ Consider this a barebones project to get started with screenshots. The current p
 - [What steps were taken to solve the task?](#3-what-steps-were-taken-to-solve-the-task)
 - [Issues and resolutions](#4-issues-and-resolutions)
 - [What were the results to the project?](#5-what-were-the-results-to-the-project)
-- [What I learned](#6-what-i-learned)
+- [What I learned](#6-what-i-learned-about-this-project)
 
 
 # 1. Why I started this project!
