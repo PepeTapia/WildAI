@@ -168,7 +168,7 @@ supp_kill,supp_death,supp_assist,supp_gold
 
 I used opencv's matchTemplate() to keep track of Vision Trinkets, creating flags of Active and Unactivate states for them. A bordered trinket indicates the Vision Trinket has not been used and unborded means it has been used. This helps us find patterns for both our players and enemy players.
 
-![Ward detection with yellow borders indicating not used and no borders indicating used]]https://github.com/PepeTapia/WildAI/blob/main/images/wardDetection.gif
+![Ward detection with yellow borders indicating not used and no borders indicating used](https://github.com/PepeTapia/WildAI/blob/main/images/wardDetection.gif)
 
 I attempted using Yolov5, and it still has room for exploration for detecting all champions and all items, but that will be for a later time. In most cases it is easiest to just write down the champs in some type of GUI when recording the data.
 
